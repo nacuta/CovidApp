@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:player/constant.dart';
 
 class Counter extends StatelessWidget {
-  final int number;
-  final Color color;
-  final String tittle;
+  final int? number;
+  final Color? color;
+  final String? tittle;
   const Counter({
-    Key key,
+    Key? key,
     this.number,
     this.color,
     this.tittle,
@@ -22,20 +22,20 @@ class Counter extends StatelessWidget {
           width: 25,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withOpacity(.26),
+            color: color!.withOpacity(.26),
           ),
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.transparent,
               border: Border.all(
-                color: color,
+                color: color!,
                 width: 2,
               ),
             ),
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Text(
           "$number",
           style: TextStyle(
@@ -44,7 +44,7 @@ class Counter extends StatelessWidget {
           ),
         ),
         Text(
-          tittle,
+          tittle!,
           style: kSubTextStyle,
         ),
       ],

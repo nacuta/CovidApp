@@ -6,12 +6,12 @@ import 'package:player/info_screen.dart';
 import 'constant.dart';
 
 class MyHeader extends StatelessWidget {
-  final String image;
-  final String textTop;
-  final String textBottom;
+  final String? image;
+  final String? textTop;
+  final String? textBottom;
 
   const MyHeader({
-    Key key,
+    Key? key,
     this.image,
     this.textTop,
     this.textBottom,
@@ -66,7 +66,7 @@ class MyHeader extends StatelessWidget {
               child: Stack(
                 children: [
                   SvgPicture.asset(
-                    image,
+                    image!,
                     width: 230,
                     fit: BoxFit.fitWidth,
                     alignment: Alignment.topCenter,

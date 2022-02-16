@@ -1,26 +1,20 @@
-import 'dart:convert';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:player/api.dart';
 import 'package:player/api_request.dart';
 import 'package:player/constant.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:player/counter.dart';
+import 'package:player/map_widget.dart';
 
 import 'covid_romania.dart';
 import 'my_header.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-CovidRomania covidRomania;
-int newCasesToday = covidRomania.newCasesToday;
-int newRecoveredToday = covidRomania.newRecoveredToday;
-int newDeathsToday = covidRomania.newDeathsToday;
-
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   _MyAppState createState() => _MyAppState();
@@ -36,16 +30,17 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: kBackgroundColor,
           fontFamily: "Poppins",
           visualDensity: VisualDensity.adaptivePlatformDensity,
-          textTheme: TextTheme(headline1: TextStyle(color: kBodyTextColor))),
+          textTheme:
+              const TextTheme(headline1: TextStyle(color: kBodyTextColor))),
       // home: InfoScreen(),
-      home: MyHomePage(title: 'Covid 19'),
+      home: const MyHomePage(title: 'Covid 19'),
       // home: Api(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -54,95 +49,88 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<dynamic> apiResponse;
-  fetchYesterday(data) {
-    var x = data.countyData[0].totalCases;
-    return x;
-  }
-
+  late Future<ApiResponse> apiResponse;
   @override
   void initState() {
     super.initState();
     apiResponse = fetchApi();
-    // dropDownValue = 'Romania';
   }
 
-  List<String> dropDownValueItems;
+  late List<String> dropDownValueItems;
   fetchCountyCases(String selected, data) {
     int index = dropDownValueItems.indexOf(selected);
-    var x = data.countyData[index - 1].totalCases;
-    return x;
+    final int countyTotalCases = data.countyData[index - 1].totalCases;
+    return countyTotalCases;
   }
 
   String _dropDownValue = "Romania";
-  int countyCases;
+  late int countyCases;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
+      body: FutureBuilder<ApiResponse>(
           future: apiResponse,
           builder: (content, snapshot) {
             dropDownValueItems = ["Romania"];
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(),
                 );
-                break;
               default:
-                newCasesToday = snapshot.data.covidRomania[0].newCasesToday;
-                newRecoveredToday =
-                    snapshot.data.covidRomania[0].newRecoveredToday;
-                newDeathsToday = snapshot.data.covidRomania[0].newDeathsToday;
-                var county = snapshot.data.covidRomania[0].countyData;
-                county.forEach(
-                    (element) => dropDownValueItems.add(element.countyName));
+                CovidRomania presentDayData = snapshot.data!.covidRomania![0];
+                final int? newCasesToday = presentDayData.newCasesToday;
+                final int? newRecoveredToday = presentDayData.newRecoveredToday;
+                final int? newDeathsToday = presentDayData.newDeathsToday;
+                List<CountyData>? county = presentDayData.countyData;
+                county?.forEach((element) =>
+                    dropDownValueItems.add(element.countyName.toString()));
                 return SingleChildScrollView(
                   child: Column(
                     children: [
-                      MyHeader(
+                      const MyHeader(
                         image: "assets/icons/Drcorona.svg",
                         textTop: "All you need",
                         textBottom: "is to stay at",
                       ),
                       Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 20),
                         height: 60,
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(25),
                           border: Border.all(
-                            color: Color(0xFFE5E5E5E5),
+                            color: const Color(0xFFE5E5E5E5),
                           ),
                         ),
                         child: Row(
                           children: [
                             SvgPicture.asset("assets/icons/maps-and-flags.svg"),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             Expanded(
                               child: DropdownButton(
                                 isExpanded: true,
-                                underline: SizedBox(),
+                                underline: const SizedBox(),
                                 icon: SvgPicture.asset(
                                     "assets/icons/dropdown.svg"),
                                 value: _dropDownValue,
                                 onChanged: (value) {
                                   setState(() {
-                                    _dropDownValue = value;
+                                    _dropDownValue = value.toString();
                                     if (_dropDownValue !=
                                         dropDownValueItems[0]) {
-                                      var y = fetchCountyCases(_dropDownValue,
-                                          snapshot.data.covidRomania[1]);
-                                      var z = fetchCountyCases(_dropDownValue,
-                                          snapshot.data.covidRomania[0]);
-                                      countyCases = z - y;
+                                      int yesterdayCountyCases =
+                                          fetchCountyCases(_dropDownValue,
+                                              snapshot.data!.covidRomania![1]);
+                                      int todayCountyCases = fetchCountyCases(
+                                          _dropDownValue,
+                                          snapshot.data!.covidRomania![0]);
+                                      countyCases = todayCountyCases -
+                                          yesterdayCountyCases;
                                     }
-
-                                    print(_dropDownValue);
-                                    print(dropDownValueItems);
                                   });
                                 },
                                 items: dropDownValueItems
@@ -159,14 +147,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
                         child: Column(
                           children: [
                             Row(
                               children: [
                                 RichText(
-                                  text: TextSpan(
+                                  text: const TextSpan(
                                     children: [
                                       TextSpan(
                                         text: "Case Updates\n",
@@ -181,8 +169,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ],
                                   ),
                                 ),
-                                Spacer(),
-                                Text(
+                                const Spacer(),
+                                const Text(
                                   "See details",
                                   style: TextStyle(
                                     color: kPrimaryColor,
@@ -191,15 +179,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             Container(
-                              padding: EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
                                 color: Colors.white,
                                 boxShadow: [
                                   BoxShadow(
-                                    offset: Offset(0, 4),
+                                    offset: const Offset(0, 4),
                                     blurRadius: 30,
                                     color: kShadowColor,
                                   ),
@@ -236,23 +224,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                           number: countyCases,
                                           tittle: "Infected",
                                         ),
-                                        // Counter(
-                                        //   color: kDeathColor,
-                                        //   number: yesterdayTotal,
-                                        //   tittle: "Deaths",
-                                        // ),
-                                        // Counter(
-                                        //   color: kRecovercolor,
-                                        //   number: yesterdayTotal,
-                                        //   tittle: "Recovered",
-                                        // ),
                                       ],
                                     ),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
+                              children: const [
                                 Text(
                                   "Spread of Virus",
                                   style: kTitleTextstyle,
@@ -266,27 +244,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ],
                             ),
-                            Container(
-                              margin: EdgeInsets.only(top: 20),
-                              padding: EdgeInsets.all(20),
-                              height: 178,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: Offset(0, 10),
-                                    blurRadius: 30,
-                                    color: kShadowColor,
-                                  ),
-                                ],
-                              ),
-                              child: Image.asset(
-                                "assets/images/map.png",
-                                fit: BoxFit.contain,
-                              ),
-                            ),
+                            const MapWidget(),
                           ],
                         ),
                       ),
