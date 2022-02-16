@@ -1,6 +1,6 @@
-# player
+# Covid Romania App 
 
-A new Flutter project.
+A Flutter app created for tracking the Covid-19 situation, it is using Http package to call an API (https://www.graphs.ro) and the data  is consumed with a FutureBuilder.
 
 ## Getting Started
 
@@ -14,3 +14,4 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter, view our
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
